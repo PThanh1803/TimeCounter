@@ -14,6 +14,7 @@ interface AppState {
     laps: any[]; // Replace 'any[]' with the appropriate type for laps
     timeElapsed: Date | null; // Replace 'any[]' with the appropriate type for laps3`
     reset : boolean;
+    count : number;
 }
 
 
@@ -24,6 +25,7 @@ export default class App extends Component {
         laps: [],
         timeElapsed: null,
         reset : false,
+        count : 0,
     };
 
     interval: NodeJS.Timeout | undefined;
@@ -35,6 +37,7 @@ export default class App extends Component {
             startTime: null,
             laps: [],
             reset : false,
+            count : 0,
         };
         this.handleStartPress = this.handleStartPress.bind(this);
         this.startStopButton = this.startStopButton.bind(this);
@@ -43,7 +46,7 @@ export default class App extends Component {
     }
 
     handleStartPress() {
-        this.setState({ running: !this.state.running , reset : false});
+        this.setState({ running: !this.state.running , reset : false,count : this.state.count + 1});
         if (this.state.running) {
             clearInterval(this.interval);
             this.setState({
@@ -52,10 +55,12 @@ export default class App extends Component {
             return;
         }
         console.log('started');
-        this.setState({
-            startTime: new Date(),
-        });
 
+        if ( !this.state.startTime ){
+            this.setState({
+                startTime: new Date(),
+            });
+        }
         this.interval = setInterval(() => {
             if (this.state.startTime) {
                 this.setState({
@@ -66,6 +71,15 @@ export default class App extends Component {
         }, 30);
     }
 
+    comparetime () {
+        for (let i = 0; i < this.state.laps.length; i++) {
+            var max = this.state.laps[0];
+            if (this.state.laps[i] > max) {
+                return true;
+            }
+        }
+        return false;
+    }
     handleLapPress() {
         var lap = this.state.timeElapsed;
 
@@ -78,10 +92,12 @@ export default class App extends Component {
     handleResetPress() {
         this.setState({
             running: false,
+            startTime1: null,
             startTime: null,
             timeElapsed: null,
             laps: [],
             reset :!this.state.reset,
+            count : 0,
         });
     }
     startStopButton() {
@@ -95,12 +111,23 @@ export default class App extends Component {
     }
 
     lapButton() {
-        return <TouchableHighlight style={[styles.button,{borderColor : 'white', backgroundColor : 'white',opacity : 0.5}]}
-            underlayColor="gray" onPress={this.handleLapPress}>
-            <Text style={styles.buttonText}>
-                Lap
-            </Text>
-        </TouchableHighlight>;
+        // eslint-disable-next-line eqeqeq
+        if (this.state.count == 0){
+            return <TouchableHighlight style={[styles.button,{borderColor : 'white', backgroundColor : 'lightgray',opacity : 0.5}]}
+                underlayColor="gray" >
+                <Text style={styles.buttonText}>
+                  Lap
+                </Text>
+            </TouchableHighlight>;
+        }
+        else {
+            return <TouchableHighlight style={[styles.button,{borderColor : 'white', backgroundColor : 'white',opacity : 0.5}]}
+                underlayColor="gray" onPress={this.state.running ? this.handleLapPress : this.handleResetPress}>
+                <Text style={styles.buttonText}>
+                    {this.state.running ? 'Lap' : 'Reset'}
+                </Text>
+            </TouchableHighlight>;
+        }
     }
 
 
@@ -112,14 +139,38 @@ export default class App extends Component {
         </TouchableHighlight>;
     }
     laps() {
+        var lapMax = 0;
+        var lapMin = 0;
+        var max = this.state.laps[0];
+        var min = this.state.laps[0];
+        for (let i = 0; i < this.state.laps.length; i++) {
+            if (this.state.laps[i] > max) {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                lapMax = i;
+            }
+
+            if (this.state.laps[i] < min) {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                lapMin = i;
+            }
+        }
+        console.log(lapMax, lapMin);
         // eslint-disable-next-line eqeqeq
         if (this.state.reset == false){
             return this.state.laps.map(function (time, index) {
+                var lapStyle = styles.lapText; // Default style
+                if (index === lapMax) {
+                    lapStyle = styles.textMax;
+                }
+                else if (index === lapMin) {
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    lapStyle = styles.textMin;
+                }
                 return <View key={index} style={styles.lap}>
-                    <Text style={styles.lapText}>
+                    <Text style={lapStyle}>
                         Lap {index + 1}
                     </Text>
-                    <Text style={styles.lapText}>
+                    <Text style={lapStyle}>
                         {time ? formatTime(time) : '00:00:00'}
                     </Text>
                 </View>;
@@ -144,10 +195,6 @@ export default class App extends Component {
                         <View style={styles.buttonWrapper}>
                             {this.lapButton()}
                             {this.startStopButton()}
-                        </View>
-
-                        <View style={styles.buttonWrapper}>
-                            {this.refreshButton()}
                         </View>
                     </View>
                 </View>
@@ -181,7 +228,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     buttonWrapper: {
-        marginTop: 20,
+        marginTop: 50,
         flexDirection: 'row',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
@@ -213,7 +260,7 @@ const styles = StyleSheet.create({
     },
 
     lapText: {
-        fontSize: 30,
+        fontSize: 25,
         color: 'white',
     },
 
@@ -239,7 +286,14 @@ const styles = StyleSheet.create({
         color: 'white',
     },
 
-
+    textMax: {
+        color: 'red',
+        fontSize: 25,
+    },
+    textMin: {
+        color: 'green',
+        fontSize: 25,
+    },
 });
 
 
