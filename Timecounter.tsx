@@ -70,6 +70,7 @@ export default class App extends Component {
         var lap = this.state.timeElapsed;
 
         this.setState({
+            startTime: new Date(),
             laps: this.state.laps.concat([lap]),
         });
     }
@@ -87,16 +88,16 @@ export default class App extends Component {
         var style = this.state.running ? styles.stopButton : styles.startButton;
 
         return <TouchableHighlight underlayColor="gray" onPress={this.handleStartPress} style={[style, styles.button]}>
-            <Text>
+            <Text style={styles.buttonText}>
                 {this.state.running ? 'Stop' : 'Start'}
             </Text>
         </TouchableHighlight>;
     }
 
     lapButton() {
-        return <TouchableHighlight style={styles.button}
+        return <TouchableHighlight style={[styles.button,{borderColor : 'white', backgroundColor : 'white',opacity : 0.5}]}
             underlayColor="gray" onPress={this.handleLapPress}>
-            <Text>
+            <Text style={styles.buttonText}>
                 Lap
             </Text>
         </TouchableHighlight>;
@@ -105,7 +106,7 @@ export default class App extends Component {
 
     refreshButton() {
         return <TouchableHighlight style={styles.refeshButton} underlayColor="red" onPress={this.handleResetPress} >
-            <Text>
+            <Text style={styles.buttonText} >
                 Refresh
             </Text>
         </TouchableHighlight>;
@@ -116,7 +117,7 @@ export default class App extends Component {
             return this.state.laps.map(function (time, index) {
                 return <View key={index} style={styles.lap}>
                     <Text style={styles.lapText}>
-                        Lap # {index + 1}
+                        Lap {index + 1}
                     </Text>
                     <Text style={styles.lapText}>
                         {time ? formatTime(time) : '00:00:00'}
@@ -166,10 +167,11 @@ export default class App extends Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        margin: 20,
+        backgroundColor: 'black',
     },
     header: {
         flex: 1,
+        justifyContent: 'center',
     },
     footer: {
         flex: 1,
@@ -181,14 +183,14 @@ const styles = StyleSheet.create({
     buttonWrapper: {
         marginTop: 20,
         flexDirection: 'row',
-        justifyContent: 'space-around',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
         alignItems: 'center',
     },
     lap: {
-        justifyContent: 'space-around',
+        justifyContent: 'space-between',
         flexDirection: 'row',
-        backgroundColor: 'lightgrey',
-        padding: 10,
+        paddingHorizontal: 20,
         marginTop: 10,
     },
 
@@ -201,17 +203,29 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     timer: {
-        fontSize: 60,
+        fontSize: 90,
+        color: 'white',
     },
+
+    buttonText: {
+        fontSize: 18,
+        color: 'white',
+    },
+
     lapText: {
         fontSize: 30,
+        color: 'white',
     },
 
     stopButton: {
         borderColor: 'red',
+        backgroundColor: 'red',
+        opacity: 0.5,
     },
     startButton: {
         borderColor: 'green',
+        backgroundColor: 'green',
+        opacity: 0.5,
     },
     refeshButton: {
         borderWidth: 2,
